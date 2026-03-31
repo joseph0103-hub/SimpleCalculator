@@ -68,6 +68,7 @@
             // 
             txtInputWindow.Location = new Point(36, 81);
             txtInputWindow.Name = "txtInputWindow";
+            txtInputWindow.ReadOnly = true;
             txtInputWindow.Size = new Size(437, 23);
             txtInputWindow.TabIndex = 1;
             // 
@@ -76,6 +77,7 @@
             txtOutputWindow.BackColor = Color.Lime;
             txtOutputWindow.Location = new Point(36, 129);
             txtOutputWindow.Name = "txtOutputWindow";
+            txtOutputWindow.ReadOnly = true;
             txtOutputWindow.Size = new Size(437, 23);
             txtOutputWindow.TabIndex = 2;
             // 
@@ -142,7 +144,7 @@
             btnNum5.Name = "btnNum5";
             btnNum5.Size = new Size(96, 48);
             btnNum5.TabIndex = 8;
-            btnNum5.Text = "５";
+            btnNum5.Text = "5";
             btnNum5.UseVisualStyleBackColor = false;
             // 
             // btnNum4
@@ -153,7 +155,7 @@
             btnNum4.Name = "btnNum4";
             btnNum4.Size = new Size(96, 48);
             btnNum4.TabIndex = 9;
-            btnNum4.Text = "４";
+            btnNum4.Text = "4";
             btnNum4.UseVisualStyleBackColor = false;
             // 
             // btnNum8
@@ -164,7 +166,7 @@
             btnNum8.Name = "btnNum8";
             btnNum8.Size = new Size(96, 48);
             btnNum8.TabIndex = 10;
-            btnNum8.Text = "８";
+            btnNum8.Text = "8";
             btnNum8.UseVisualStyleBackColor = false;
             // 
             // btnNum7
@@ -175,7 +177,7 @@
             btnNum7.Name = "btnNum7";
             btnNum7.Size = new Size(96, 48);
             btnNum7.TabIndex = 11;
-            btnNum7.Text = "７";
+            btnNum7.Text = "7";
             btnNum7.UseVisualStyleBackColor = false;
             // 
             // btnEditC
@@ -186,7 +188,7 @@
             btnEditC.Name = "btnEditC";
             btnEditC.Size = new Size(96, 48);
             btnEditC.TabIndex = 12;
-            btnEditC.Text = "Ｃ";
+            btnEditC.Text = "C";
             btnEditC.UseVisualStyleBackColor = false;
             // 
             // btnOpEql
@@ -199,8 +201,7 @@
             btnOpEql.TabIndex = 13;
             btnOpEql.Text = "=";
             btnOpEql.UseVisualStyleBackColor = false;
-            btnOpEql.Click += button11_Click;
-            // 
+                        // 
             // btnNum9
             // 
             btnNum9.BackColor = Color.FromArgb(128, 255, 128);
@@ -209,7 +210,7 @@
             btnNum9.Name = "btnNum9";
             btnNum9.Size = new Size(96, 48);
             btnNum9.TabIndex = 14;
-            btnNum9.Text = "９";
+            btnNum9.Text = "9";
             btnNum9.UseVisualStyleBackColor = false;
             // 
             // btnNum6
@@ -220,7 +221,7 @@
             btnNum6.Name = "btnNum6";
             btnNum6.Size = new Size(96, 48);
             btnNum6.TabIndex = 15;
-            btnNum6.Text = "６";
+            btnNum6.Text = "6";
             btnNum6.UseVisualStyleBackColor = false;
             // 
             // btnNum3
@@ -286,7 +287,7 @@
             btnOpSub.Name = "btnOpSub";
             btnOpSub.Size = new Size(96, 48);
             btnOpSub.TabIndex = 21;
-            btnOpSub.Text = "－";
+            btnOpSub.Text = "-";
             btnOpSub.UseVisualStyleBackColor = false;
             // 
             // btnOpAdd
@@ -297,7 +298,7 @@
             btnOpAdd.Name = "btnOpAdd";
             btnOpAdd.Size = new Size(96, 48);
             btnOpAdd.TabIndex = 22;
-            btnOpAdd.Text = "＋";
+            btnOpAdd.Text = "+";
             btnOpAdd.UseVisualStyleBackColor = false;
             // 
             // frmCalculator
