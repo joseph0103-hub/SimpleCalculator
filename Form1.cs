@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Generic;
 using System.Globalization;
+using System.Drawing;
 using System.Windows.Forms;
 
 namespace SimpleCalculator
@@ -17,12 +19,23 @@ namespace SimpleCalculator
         // 마지막 동작이 '=' 버튼인지 여부
         private bool lastActionWasEquals = false;
 
+        // 계산 기록 표시용 컨트롤
+        private ListBox? lstHistory;
+        private Button? btnHistoryReset;
+
         public frmCalculator()
         {
             InitializeComponent();
 
             // 버튼 이벤트 연결
             WireEvents();
+
+            // 키보드 입력을 폼에서 먼저 받도록 설정
+            KeyPreview = true;
+            KeyDown += frmCalculator_KeyDown;
+
+            // 계산 기록 영역 동적 생성
+            SetupTask4HistoryControls();
 
             // 초기 상태로 리셋
             ResetForNewCalculation();
@@ -62,6 +75,32 @@ namespace SimpleCalculator
 
             btnFuncPlus.Click += PlusMinusButton_Click;
             btnFuncDot.Click += DotButton_Click;
+        }
+
+        // 계산 기록 표시용 ListBox와 초기화 버튼 생성
+        private void SetupTask4HistoryControls()
+        {
+            lstHistory = new ListBox();
+            lstHistory.Name = "lstHistory";
+            lstHistory.Font = new Font("맑은 고딕", 10F, FontStyle.Regular, GraphicsUnit.Point);
+            lstHistory.Location = new Point(490, 92);
+            lstHistory.Size = new Size(260, 304);
+
+            btnHistoryReset = new Button();
+            btnHistoryReset.Name = "btnHistoryReset";
+            btnHistoryReset.Text = "Reset History";
+            btnHistoryReset.Font = new Font("맑은 고딕", 11F, FontStyle.Regular, GraphicsUnit.Point);
+            btnHistoryReset.Location = new Point(490, 415);
+            btnHistoryReset.Size = new Size(260, 44);
+            btnHistoryReset.BackColor = Color.FromArgb(224, 224, 224);
+            btnHistoryReset.Click += btnHistoryReset_Click;
+
+            Controls.Add(lstHistory);
+            Controls.Add(btnHistoryReset);
+
+            ClientSize = new Size(780, 500);
+            FormBorderStyle = FormBorderStyle.FixedSingle;
+            MaximizeBox = false;
         }
 
         // 숫자 버튼 클릭 시 처리
@@ -151,6 +190,7 @@ namespace SimpleCalculator
             UpdateDisplays();
         }
 
+        // 연산자 버튼 클릭 시 처리
         private void OperatorButton_Click(object? sender, EventArgs e)
         {
             if (sender is not Button button)
@@ -210,9 +250,14 @@ namespace SimpleCalculator
                 return;
             }
 
+            string formattedExpression = $"{FormatDecimal(firstOperand)} {currentOperator} {FormatDecimal(secondOperand)} = {FormatDecimal(result)}";
             string formattedResult = FormatDecimal(result);
-            txtInputWindow.Text = $"{FormatDecimal(firstOperand)} {currentOperator} {FormatDecimal(secondOperand)} = {formattedResult}";
+
+            txtInputWindow.Text = formattedExpression;
             txtOutputWindow.Text = formattedResult;
+
+            // 계산 기록 추가
+            lstHistory?.Items.Add(formattedExpression);
 
             currentInput = formattedResult;
             currentOperator = string.Empty;
@@ -259,6 +304,111 @@ namespace SimpleCalculator
             // 마지막 문자 제거
             currentInput = currentInput.Substring(0, currentInput.Length - 1);
             UpdateDisplays();
+        }
+
+        // 키보드 입력 지원
+        private void frmCalculator_KeyDown(object? sender, KeyEventArgs e)
+        {
+            if (e.KeyCode >= Keys.D0 && e.KeyCode <= Keys.D9 && !e.Shift)
+            {
+                AppendDigit(((int)e.KeyCode - (int)Keys.D0).ToString());
+                e.SuppressKeyPress = true;
+                return;
+            }
+
+            if (e.KeyCode >= Keys.NumPad0 && e.KeyCode <= Keys.NumPad9)
+            {
+                AppendDigit(((int)e.KeyCode - (int)Keys.NumPad0).ToString());
+                e.SuppressKeyPress = true;
+                return;
+            }
+
+            switch (e.KeyCode)
+            {
+                case Keys.Add:
+                case Keys.Oemplus when e.Shift:
+                    ApplyOperator("+");
+                    e.SuppressKeyPress = true;
+                    break;
+
+                case Keys.Subtract:
+                case Keys.OemMinus:
+                    ApplyOperator("-");
+                    e.SuppressKeyPress = true;
+                    break;
+
+                case Keys.Multiply:
+                    ApplyOperator("×");
+                    e.SuppressKeyPress = true;
+                    break;
+
+                case Keys.Divide:
+                case Keys.OemQuestion:
+                    ApplyOperator("÷");
+                    e.SuppressKeyPress = true;
+                    break;
+
+                case Keys.Decimal:
+                case Keys.OemPeriod:
+                    DotButton_Click(btnFuncDot, EventArgs.Empty);
+                    e.SuppressKeyPress = true;
+                    break;
+
+                case Keys.Enter:
+                case Keys.Oemplus when !e.Shift:
+                    EqualButton_Click(btnOpEql, EventArgs.Empty);
+                    e.SuppressKeyPress = true;
+                    break;
+
+                case Keys.Back:
+                    DeleteButton_Click(btnEditDel, EventArgs.Empty);
+                    e.SuppressKeyPress = true;
+                    break;
+
+                case Keys.Escape:
+                    ClearAllButton_Click(btnEditC, EventArgs.Empty);
+                    e.SuppressKeyPress = true;
+                    break;
+            }
+        }
+
+        // 키보드 숫자 입력 시 공통 처리
+        private void AppendDigit(string digit)
+        {
+            if (lastActionWasEquals && string.IsNullOrEmpty(currentOperator))
+            {
+                ResetForNewCalculation();
+            }
+
+            if (currentInput == "0")
+            {
+                currentInput = digit;
+            }
+            else if (currentInput == "-0")
+            {
+                currentInput = "-" + digit;
+            }
+            else
+            {
+                currentInput += digit;
+            }
+
+            lastActionWasEquals = false;
+            UpdateDisplays();
+        }
+
+        // 키보드 연산자 입력 시 공통 처리
+        private void ApplyOperator(string op)
+        {
+            Button fakeButton = new Button();
+            fakeButton.Text = op;
+            OperatorButton_Click(fakeButton, EventArgs.Empty);
+        }
+
+        // 계산 기록 초기화
+        private void btnHistoryReset_Click(object? sender, EventArgs e)
+        {
+            lstHistory?.Items.Clear();
         }
 
         // 실제 계산 로직 처리
