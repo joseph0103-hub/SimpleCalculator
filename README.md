@@ -137,31 +137,31 @@
 
 ![부호 전환](img/Assignment_4_SignToggle.png)
 
-1. +/- 버튼을 눌러 현재 입력값의 부호를 양수와 음수로 전환하여 계산하는 화면입니다.
+1. +/- 버튼을 눌러 현재 입력값의 부호를 양수와 음수로 전환하여 계산한다.
 
 ![소수점 입력](img/Assignment_4_DecimalInput.png)
 
-2. . 버튼을 눌러 소수점을 입력하고 실수 계산을 하는 화면입니다.
+2. . 버튼을 눌러 소수점을 입력하고 실수 계산을 한다.
 
 ![숫자 키보드 입력](img/Assignment_4_KeyboardNumber.png)
 
-3. 키보드 숫자 키를 눌러 마우스 클릭 없이 값을 계산하는 화면입니다.
+3. 키보드 숫자 키를 눌러 마우스 클릭 없이 값을 계산한다.
 
 ![편집 키보드 Backspace 입력](img/Assignment_4_KeyboardEdit.png)
 
-4. Backspace로 한 글자 삭제하는 화면입니다.
+4. 키보드 Backspace키로 한 글자씩 삭제한다.
 
 ![편집 키보드 Esc 입력](img/Assignment_4_KeyboardEsc.png)
 
-5. Escape로 전체 초기화를 수행하는 화면입니다.
+5. Escape로 전체 초기화를 수행한다.
 
 ![계산 기록](img/Assignment_4_History.png)
 
-6. 계산이 완료될 때마다 오른쪽 ListBox에 수식과 결과가 기록되는 화면입니다.
+6. 계산이 완료될 때마다 오른쪽 ListBox에 수식과 결과가 기록된다.
 
 ![기록 초기화](img/Assignment_4_ResetHistory.png)
 
-7. Reset History 버튼을 눌러 저장된 계산 기록을 모두 삭제하는 화면입니다.
+7. Reset History 버튼을 눌러 저장된 계산 기록을 모두 삭제한다.
 
 ### 과제 내용
 - +/- 버튼과 . 버튼 이벤트를 추가한다.  
