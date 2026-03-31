@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 using System.Windows.Forms;
 
 namespace SimpleCalculator
@@ -7,11 +8,7 @@ namespace SimpleCalculator
     {
         // 현재 입력 중인 숫자를 문자열 형태로 저장
         private string currentInput = string.Empty;
-
-        // 첫 번째 피연산자 저장
-        private int firstOperand = 0;
-
-        // 현재 선택된 연산자 (+, -, *, /)
+        private decimal firstOperand = 0m;
         private string currentOperator = string.Empty;
 
         // 두 번째 숫자 입력 대기 상태 여부
@@ -62,6 +59,9 @@ namespace SimpleCalculator
             btnEditC.Click += ClearAllButton_Click;
             btnEditCE.Click += ClearEntryButton_Click;
             btnEditDel.Click += DeleteButton_Click;
+
+            btnFuncPlus.Click += PlusMinusButton_Click;
+            btnFuncDot.Click += DotButton_Click;
         }
 
         // 숫자 버튼 클릭 시 처리
@@ -87,18 +87,70 @@ namespace SimpleCalculator
             {
                 currentInput = digit;
             }
+            else if (currentInput == "-0")
+            {
+                currentInput = "-" + digit;
+            }
             else
             {
                 currentInput += digit;
             }
 
             lastActionWasEquals = false;
-
-            // 화면 갱신
             UpdateDisplays();
         }
 
-        // 연산자 버튼 클릭 시 처리
+        private void DotButton_Click(object? sender, EventArgs e)
+        {
+            if (lastActionWasEquals && string.IsNullOrEmpty(currentOperator))
+            {
+                ResetForNewCalculation();
+            }
+
+            if (string.IsNullOrEmpty(currentInput))
+            {
+                currentInput = "0.";
+            }
+            else if (currentInput == "-")
+            {
+                currentInput = "-0.";
+            }
+            else if (!currentInput.Contains('.'))
+            {
+                currentInput += ".";
+            }
+
+            lastActionWasEquals = false;
+            UpdateDisplays();
+        }
+
+        private void PlusMinusButton_Click(object? sender, EventArgs e)
+        {
+            if (lastActionWasEquals && string.IsNullOrEmpty(currentOperator))
+            {
+                currentInput = FormatDecimal(ParseOrZero(currentInput) * -1m);
+                txtInputWindow.Text = string.Empty;
+                txtOutputWindow.Text = currentInput;
+                lastActionWasEquals = false;
+                return;
+            }
+
+            if (string.IsNullOrEmpty(currentInput))
+            {
+                currentInput = "-";
+            }
+            else if (currentInput.StartsWith("-"))
+            {
+                currentInput = currentInput.Substring(1);
+            }
+            else
+            {
+                currentInput = "-" + currentInput;
+            }
+
+            UpdateDisplays();
+        }
+
         private void OperatorButton_Click(object? sender, EventArgs e)
         {
             if (sender is not Button button)
@@ -106,8 +158,7 @@ namespace SimpleCalculator
                 return;
             }
 
-            // 현재 입력값을 정수로 변환
-            if (!TryGetCurrentInput(out int number))
+            if (!TryGetCurrentInput(out decimal number))
             {
                 MessageBox.Show("먼저 숫자를 입력하세요.", "입력 필요", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return;
@@ -147,28 +198,23 @@ namespace SimpleCalculator
                 return;
             }
 
-            // 두 번째 값 가져오기
-            if (!TryGetCurrentInput(out int secondOperand))
+            if (!TryGetCurrentInput(out decimal secondOperand))
             {
                 MessageBox.Show("두 번째 숫자를 입력하세요.", "입력 필요", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return;
             }
 
-            // 계산 수행
-            if (!TryCalculate(firstOperand, secondOperand, currentOperator, out int result, out string errorMessage))
+            if (!TryCalculate(firstOperand, secondOperand, currentOperator, out decimal result, out string errorMessage))
             {
                 MessageBox.Show(errorMessage, "계산 오류", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
-            // 전체 수식 출력
-            txtInputWindow.Text = $"{firstOperand} {currentOperator} {secondOperand} = {result}";
+            string formattedResult = FormatDecimal(result);
+            txtInputWindow.Text = $"{FormatDecimal(firstOperand)} {currentOperator} {FormatDecimal(secondOperand)} = {formattedResult}";
+            txtOutputWindow.Text = formattedResult;
 
-            // 결과 출력
-            txtOutputWindow.Text = result.ToString();
-
-            // 결과를 다음 계산에 활용
-            currentInput = result.ToString();
+            currentInput = formattedResult;
             currentOperator = string.Empty;
             isWaitingForSecondOperand = false;
             lastActionWasEquals = true;
@@ -216,17 +262,19 @@ namespace SimpleCalculator
         }
 
         // 실제 계산 로직 처리
-        private bool TryCalculate(int left, int right, string op, out int result, out string errorMessage)
+        private bool TryCalculate(decimal left, decimal right, string op, out decimal result, out string errorMessage)
         {
-            result = 0;
+            result = 0m;
             errorMessage = string.Empty;
 
             switch (op)
             {
                 case "+":
+                case "＋":
                     result = left + right;
                     return true;
                 case "-":
+                case "－":
                     result = left - right;
                     return true;
                 case "×":
@@ -235,7 +283,7 @@ namespace SimpleCalculator
                     return true;
                 case "÷":
                 case "/":
-                    if (right == 0)
+                    if (right == 0m)
                     {
                         errorMessage = "0으로 나눌 수 없습니다.";
                         return false;
@@ -250,10 +298,9 @@ namespace SimpleCalculator
             }
         }
 
-        // 현재 입력값을 int로 변환
-        private bool TryGetCurrentInput(out int value)
+        private bool TryGetCurrentInput(out decimal value)
         {
-            return int.TryParse(currentInput, out value);
+            return decimal.TryParse(currentInput, NumberStyles.Number, CultureInfo.InvariantCulture, out value);
         }
 
         // 화면 표시 업데이트
@@ -266,19 +313,19 @@ namespace SimpleCalculator
                     txtInputWindow.Text = string.Empty;
                 }
 
-                txtOutputWindow.Text = string.IsNullOrEmpty(currentInput) ? "0" : currentInput;
+                txtOutputWindow.Text = string.IsNullOrEmpty(currentInput) || currentInput == "-" ? "0" : currentInput;
                 return;
             }
 
-            txtInputWindow.Text = $"{firstOperand} {currentOperator}";
-            txtOutputWindow.Text = string.IsNullOrEmpty(currentInput) ? "0" : currentInput;
+            txtInputWindow.Text = $"{FormatDecimal(firstOperand)} {currentOperator}";
+            txtOutputWindow.Text = string.IsNullOrEmpty(currentInput) || currentInput == "-" ? "0" : currentInput;
         }
 
         // 전체 상태 초기화
         private void ResetForNewCalculation()
         {
             currentInput = string.Empty;
-            firstOperand = 0;
+            firstOperand = 0m;
             currentOperator = string.Empty;
             isWaitingForSecondOperand = false;
             lastActionWasEquals = false;
@@ -304,6 +351,16 @@ namespace SimpleCalculator
                 "９" => "9",
                 _ => text
             };
+        }
+
+        private static decimal ParseOrZero(string text)
+        {
+            return decimal.TryParse(text, NumberStyles.Number, CultureInfo.InvariantCulture, out decimal value) ? value : 0m;
+        }
+
+        private static string FormatDecimal(decimal value)
+        {
+            return value.ToString("0.############################", CultureInfo.InvariantCulture);
         }
     }
 }
