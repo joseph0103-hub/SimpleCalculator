@@ -39,6 +39,8 @@ namespace SimpleCalculator
             btnOpEql.Click += EqualButton_Click;
 
             btnEditC.Click += ClearAllButton_Click;
+            btnEditCE.Click += ClearEntryButton_Click;
+            btnEditDel.Click += DeleteButton_Click;
         }
 
         private void NumberButton_Click(object? sender, EventArgs e)
@@ -130,6 +132,36 @@ namespace SimpleCalculator
             UpdateDisplays();
         }
 
+        private void ClearEntryButton_Click(object? sender, EventArgs e)
+        {
+            currentInput = string.Empty;
+            lastActionWasEquals = false;
+
+            if (string.IsNullOrEmpty(currentOperator))
+            {
+                txtInputWindow.Text = string.Empty;
+            }
+
+            UpdateDisplays();
+        }
+
+        private void DeleteButton_Click(object? sender, EventArgs e)
+        {
+            if (lastActionWasEquals)
+            {
+                return;
+            }
+
+            if (string.IsNullOrEmpty(currentInput))
+            {
+                UpdateDisplays();
+                return;
+            }
+
+            currentInput = currentInput.Substring(0, currentInput.Length - 1);
+            UpdateDisplays();
+        }
+
         private bool TryCalculate(int left, int right, string op, out int result, out string errorMessage)
         {
             result = 0;
@@ -154,6 +186,7 @@ namespace SimpleCalculator
                         errorMessage = "0으로 나눌 수 없습니다.";
                         return false;
                     }
+
                     result = left / right;
                     return true;
                 default:
