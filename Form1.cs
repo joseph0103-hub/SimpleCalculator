@@ -15,6 +15,7 @@ namespace SimpleCalculator
         {
             InitializeComponent();
             WireEvents();
+            ResetForNewCalculation();
             UpdateDisplays();
         }
 
@@ -31,7 +32,10 @@ namespace SimpleCalculator
             btnNum8.Click += NumberButton_Click;
             btnNum9.Click += NumberButton_Click;
 
-            btnOpAdd.Click += AddButton_Click;
+            btnOpAdd.Click += OperatorButton_Click;
+            btnOpSub.Click += OperatorButton_Click;
+            btnOpMul.Click += OperatorButton_Click;
+            btnOpDiv.Click += OperatorButton_Click;
             btnOpEql.Click += EqualButton_Click;
 
             btnEditC.Click += ClearAllButton_Click;
@@ -49,21 +53,42 @@ namespace SimpleCalculator
                 ResetForNewCalculation();
             }
 
-            currentInput += NormalizeDigit(button.Text);
+            string digit = NormalizeDigit(button.Text);
+            if (currentInput == "0")
+            {
+                currentInput = digit;
+            }
+            else
+            {
+                currentInput += digit;
+            }
+
             lastActionWasEquals = false;
             UpdateDisplays();
         }
 
-        private void AddButton_Click(object? sender, EventArgs e)
+        private void OperatorButton_Click(object? sender, EventArgs e)
         {
+            if (sender is not Button button)
+            {
+                return;
+            }
+
             if (!TryGetCurrentInput(out int number))
             {
                 MessageBox.Show("먼저 숫자를 입력하세요.", "입력 필요", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return;
             }
 
+            if (!string.IsNullOrEmpty(currentOperator) && isWaitingForSecondOperand)
+            {
+                currentOperator = button.Text;
+                UpdateDisplays();
+                return;
+            }
+
             firstOperand = number;
-            currentOperator = "+";
+            currentOperator = button.Text;
             isWaitingForSecondOperand = true;
             currentInput = string.Empty;
             lastActionWasEquals = false;
@@ -72,9 +97,9 @@ namespace SimpleCalculator
 
         private void EqualButton_Click(object? sender, EventArgs e)
         {
-            if (currentOperator != "+" || !isWaitingForSecondOperand)
+            if (string.IsNullOrEmpty(currentOperator) || !isWaitingForSecondOperand)
             {
-                MessageBox.Show("과제 1에서는 덧셈만 계산합니다.", "안내", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show("먼저 연산자를 선택하세요.", "안내", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return;
             }
 
@@ -84,7 +109,11 @@ namespace SimpleCalculator
                 return;
             }
 
-            int result = firstOperand + secondOperand;
+            if (!TryCalculate(firstOperand, secondOperand, currentOperator, out int result, out string errorMessage))
+            {
+                MessageBox.Show(errorMessage, "계산 오류", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
 
             txtInputWindow.Text = $"{firstOperand} {currentOperator} {secondOperand} = {result}";
             txtOutputWindow.Text = result.ToString();
@@ -101,6 +130,38 @@ namespace SimpleCalculator
             UpdateDisplays();
         }
 
+        private bool TryCalculate(int left, int right, string op, out int result, out string errorMessage)
+        {
+            result = 0;
+            errorMessage = string.Empty;
+
+            switch (op)
+            {
+                case "+":
+                    result = left + right;
+                    return true;
+                case "-":
+                    result = left - right;
+                    return true;
+                case "×":
+                case "*":
+                    result = left * right;
+                    return true;
+                case "÷":
+                case "/":
+                    if (right == 0)
+                    {
+                        errorMessage = "0으로 나눌 수 없습니다.";
+                        return false;
+                    }
+                    result = left / right;
+                    return true;
+                default:
+                    errorMessage = "지원하지 않는 연산입니다.";
+                    return false;
+            }
+        }
+
         private bool TryGetCurrentInput(out int value)
         {
             return int.TryParse(currentInput, out value);
@@ -110,7 +171,11 @@ namespace SimpleCalculator
         {
             if (string.IsNullOrEmpty(currentOperator))
             {
-                txtInputWindow.Text = lastActionWasEquals ? txtInputWindow.Text : string.Empty;
+                if (!lastActionWasEquals)
+                {
+                    txtInputWindow.Text = string.Empty;
+                }
+
                 txtOutputWindow.Text = string.IsNullOrEmpty(currentInput) ? "0" : currentInput;
                 return;
             }
